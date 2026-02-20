@@ -1,0 +1,128 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#F5F3EF; 
+    padding:60px;
+}
+
+.admin-wrapper{
+    max-width:1400px;
+    margin:auto;
+}
+
+.admin-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:40px;
+}
+
+.admin-header h1{
+    color:#7A3E00;
+    font-size:28px;
+}
+
+.logout-btn{
+    padding:10px 20px;
+    background:#7A3E00;
+    color:#fff;
+    text-decoration:none;
+    border-radius:20px;
+    transition:.3s;
+}
+
+.logout-btn:hover{
+    background:#5c2f00;
+}
+
+.table-container{
+    background:#ffffff;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 25px 60px rgba(122,62,0,0.12);
+    overflow-x:auto;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:#E9E4D8;
+}
+
+thead th{
+    text-align:left;
+    padding:16px;
+    color:#7A3E00;
+    font-weight:600;
+}
+
+tbody td{
+    padding:14px 16px;
+    border-bottom:1px solid #eee;
+    font-size:14px;
+}
+
+tbody tr:hover{
+    background:#F9F6F2;
+}
+
+
+table th:nth-child(8),
+table td:nth-child(8){
+    min-width:100px;     
+    white-space:nowrap; 
+}
+
+.edit-btn{
+    padding:6px 14px;
+    background:#7A3E00;
+    color:#fff;
+    text-decoration:none;
+    border-radius:20px;
+    font-size:13px;
+    transition:.3s;
+}
+
+.edit-btn:hover{
+    background:#5c2f00;
+}
+
+
+
+
+.status-badge{
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:13px;
+    font-weight:500;
+    display:inline-block;
+    text-transform:capitalize;
+    letter-spacing:0.5px;
+}
+
+
+.status-badge.in_stock{
+    background:#E6F4EA;
+    color:#2E7D32;
+}
+
+
+.status-badge.in_cart{
+    background:#FFF4E5;
+    color:#E68900;
+}
+
+
+.status-badge.out_of_stock{
+    background:#FDECEA;
+    color:#C62828;
+}
+
