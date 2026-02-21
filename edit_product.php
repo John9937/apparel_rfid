@@ -24,7 +24,7 @@ if(isset($_POST['update'])){
     $imageName = $data['image'];
 
     if(isset($_FILES['image']) && $_FILES['image']['name'] != ""){
-        $imageName = time() . "_" . $_FILES['image']['name'];
+        $imageName = $_FILES['image']['name'];
         $tempName = $_FILES['image']['tmp_name'];
         move_uploaded_file($tempName, "products/" . $imageName);
     }
@@ -129,6 +129,11 @@ if(isset($_POST['update'])){
                 </select>
             </div>
 
+        </div>
+
+        <div class="form-group full">
+            <label>Image</label>
+            <input type="file" name="image" accept="image/*"required>
         </div>
 
         <div class="form-actions">

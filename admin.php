@@ -70,9 +70,7 @@ $result = mysqli_query($conn, "SELECT * FROM products");
                     <td><?= $row['tag_id'] ?></td>
                     <td><?= $row['category'] ?></td>
                     <td>
-                        <a href="edit_product.php?id=<?= $row['id'] ?>" class="edit-btn">
-                            Edit
-                        </a>
+                        <a href="edit_product.php?id=<?= $row['id'] ?>" class="edit-btn">Edit</a>
                     </td>
                 </tr>
                 <?php endwhile; ?>
@@ -80,6 +78,10 @@ $result = mysqli_query($conn, "SELECT * FROM products");
             </tbody>
 
         </table>
+        <div class="table-footer">
+            <a href="add_product.php" class="add-product-btn">Add Product</a>
+            <a href="remove_product.php" class="remove-product-btn">Remove Product</a>
+        </div>
     </div>
 
 </div>
