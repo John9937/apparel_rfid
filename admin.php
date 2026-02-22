@@ -37,7 +37,8 @@ $result = mysqli_query($conn, "SELECT * FROM products");
 
     <div class="admin-header">
         <h1>Product Database</h1>
-        <a href="logout.php" class="logout-btn">Logout</a>
+        <h3>Welcome, <?php echo $_SESSION['name']; ?>!</h3>
+        <a href="admin_logout.php" class="logout-btn">Logout</a>
     </div>
 
     <div class="table-container">

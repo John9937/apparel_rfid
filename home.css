@@ -369,7 +369,7 @@ body {
     color: var(--text-muted);
 }
 
-
+/* RESPONSIVE */
 @media (max-width: 900px) {
 
     body {

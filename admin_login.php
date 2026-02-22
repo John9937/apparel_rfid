@@ -2,23 +2,21 @@
 session_start();
 include "db.php";
 
-$error = "";
-
 if(isset($_POST['login'])){
-
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    $query = mysqli_query($conn, 
-        "SELECT * FROM admins WHERE username='$username' AND password='$password'"
-    );
+    $query = mysqli_query($conn, "SELECT * FROM admins WHERE username='$username' AND password='$password'");
+    $row = mysqli_fetch_assoc($query);
 
     if(mysqli_num_rows($query) > 0){
-        $_SESSION['admin'] = $username;
-        header("Location: admin.php");
+        $_SESSION['admin'] = $row['username'];
+        $_SESSION['name'] = $row['Name'];  
+        header("Location: admin.php"); 
         exit;
+
     } else {
-        $error = "Invalid admin credentials";
+        echo "Invalid login";
     }
 }
 ?>
@@ -34,7 +32,7 @@ if(isset($_POST['login'])){
 
 <div class="login-wrapper">
 
-  
+    <!-- LEFT SIDE -->
     <div class="login-left">
         <div class="brand">
             APPARELEASE
@@ -54,7 +52,7 @@ if(isset($_POST['login'])){
 
     </div>
 
-   
+    <!-- RIGHT SIDE -->
     <div class="login-right">
         <div class="login-box">
             <h2>ADMIN PANEL</h2>
