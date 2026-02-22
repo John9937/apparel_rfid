@@ -133,7 +133,7 @@ if(isset($_POST['update'])){
 
         <div class="form-group full">
             <label>Image</label>
-            <input type="file" name="image" accept="image/*"required>
+            <input type="file" name="image" accept="image/*">
         </div>
 
         <div class="form-actions">
