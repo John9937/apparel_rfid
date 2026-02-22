@@ -5,14 +5,13 @@ ini_set('display_errors', 1);
 session_start();
 include 'db.php';
 
-/* ===== LOAD BUDGET ===== */
+
 if (!isset($_SESSION['budget'])) {
     $res = mysqli_query($conn, "SELECT budget FROM settings WHERE id = 1");
     $row = mysqli_fetch_assoc($res);
     $_SESSION['budget'] = $row['budget'] ?? 0;
 }
 
-/* ===== GET TOTAL ===== */
 $res = mysqli_query($conn, "
     SELECT SUM(p.price * c.quantity) AS total
     FROM cart c
@@ -21,7 +20,7 @@ $res = mysqli_query($conn, "
 $row = mysqli_fetch_assoc($res);
 $total = $row['total'] ?? 0;
 
-/* ===== SET BUDGET ===== */
+
 if (isset($_POST['set_budget'])) {
     $newBudget = floatval($_POST['budget']);
     $_SESSION['budget'] = $newBudget;
@@ -38,30 +37,6 @@ if (isset($_POST['set_budget'])) {
     exit;
 }
 
-/* ===== START QR CHECKOUT ===== */
-if (isset($_POST['start_qr_checkout'])) {
-    $_SESSION['qr_checkout'] = true;
-    header("Location: shop.php");
-    exit;
-}
-
-/* ===== CONFIRM QR PAYMENT ===== */
-if (isset($_POST['confirm_qr_payment'])) {
-    mysqli_query($conn, "
-        UPDATE products 
-        SET status = 'out_of_stock' 
-        WHERE id IN (SELECT product_id FROM cart)
-    ");
-
-    mysqli_query($conn, "DELETE FROM cart");
-
-    $_SESSION['qr_checkout'] = false;
-    $_SESSION['qr_success'] = true;
-}
-
-/* ===== LOAD PRODUCTS (Grouped by Name) ===== */
-
-/* ===== LOAD PRODUCTS (Grouped by Name) ===== */
 
 $sql = "
 SELECT MIN(id) AS id, name, description, price, image
@@ -69,44 +44,38 @@ FROM products
 WHERE 1=1
 ";
 
-/* SEARCH */
+
 if (isset($_GET['search']) && $_GET['search'] != "") {
     $search = $_GET['search'];
     $sql .= " AND name LIKE '%$search%'";
 }
 
-/* CATEGORY */
+
 if (isset($_GET['category']) && $_GET['category'] != "") {
     $category = $_GET['category'];
     $sql .= " AND category = '$category'";
 }
 
-/* MIN PRICE */
+
 if (isset($_GET['min']) && $_GET['min'] != "") {
     $min = $_GET['min'];
     $sql .= " AND price >= $min";
 }
 
-/* MAX PRICE */
+
 if (isset($_GET['max']) && $_GET['max'] != "") {
     $max = $_GET['max'];
     $sql .= " AND price <= $max";
 }
 
-/* GROUP AFTER ALL FILTERS */
+
 $sql .= " GROUP BY name, description, price, image";
 
 $products = mysqli_query($conn, $sql);
 
-
-
-
 $budget = $_SESSION['budget'] ?? 0;
 $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
 
-/* ===== QR CODE ===== */
-$qrData = "ApparelEase Payment\nAmount: ₱" . number_format($total, 2);
-$qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($qrData);
 ?>
 
 <!DOCTYPE html>
@@ -118,12 +87,12 @@ $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urle
 
 <body>
 
-<!-- ================= NAVBAR ================= -->
+
 <header class="navbar">
     <div class="navbar-container">
 
         <div class="nav-left">
-            <a href="home.html" class="home-btn"><img src="home.png" alt="Home"></a>
+            <a href="index.php" class="home-btn"><img src="home.png" alt="Home"></a>
             <h2>ApparelEase</h2>
         </div>
 
@@ -142,7 +111,7 @@ $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urle
 
 
 
-<!-- ================= SHOP ================= -->
+
 <main class="shop-layout">
 
 <aside class="shop-sidebar glass">
@@ -151,7 +120,7 @@ $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urle
 
         <h3>Filters</h3>
 
-        <!-- SEARCH -->
+ 
         <div class="filter-group search-wrapper">
             <input type="text"
                 name="search"
@@ -164,7 +133,6 @@ $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urle
         </div>
 
 
-        <!-- CATEGORY -->
         <div class="filter-group">
             <h4>Category</h4>
 
@@ -191,7 +159,7 @@ $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urle
 
         </div>
 
-        <!-- PRICE RANGE -->
+
         <div class="filter-group">
             <h4>Price Range</h4>
             <div class="price-range">
@@ -242,7 +210,7 @@ $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urle
 </main>
 
 
-<!-- ================= BUDGET MODAL ================= -->
+
 <div id="budgetModal" class="modal">
     <div class="modal-content">
         <button class="modal-close" onclick="closeBudget()">×</button>
@@ -266,7 +234,7 @@ $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urle
 </div>
 
 
-<!-- ================= CART MODAL ================= -->
+
 <div id="cartModal" class="modal">
     <div class="modal-content">
         <button class="modal-close" onclick="closeCart()">×</button>
@@ -283,46 +251,21 @@ $qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urle
 
         <div id="cartItems"></div>
 
-        <form method="POST">
-            <button class="checkout-btn" name="start_qr_checkout">
-                Checkout (QR Payment)
+        <form action="create_checkout.php" method="POST">
+            <button class="checkout-btn">
+                Checkout (PayMongo)
             </button>
         </form>
     </div>
 </div>
 
 
-<!-- ================= QR MODAL ================= -->
-<div id="qrModal" class="modal">
-    <div class="modal-content">
-        <button class="modal-close" onclick="closeQR()">×</button>
-        <h2>QR Payment</h2>
-
-        <img src="<?= $qrUrl ?>"
-             style="display:block;margin:20px auto;width:200px;">
-
-        <p style="text-align:center;">
-            <strong>₱<?= number_format($total, 2) ?></strong>
-        </p>
-
-        <form method="POST">
-            <button class="checkout-btn" name="confirm_qr_payment">
-                Confirm Payment
-            </button>
-        </form>
-    </div>
-</div>
-
-
-<!-- ================= FOOTER ================= -->
 <footer class="site-footer minimal-footer">
     <div class="footer-bottom">
         © 2026 ApparelEase. All Rights Reserved.
     </div>
 </footer>
 
-
-<!-- ================= JAVASCRIPT ================= -->
 <script>
 
 const searchInput = document.getElementById("searchInput");
@@ -352,22 +295,21 @@ function toggleRadio(radio) {
 
 function resetFilters() {
 
-    // Clear search
+
     document.getElementById("searchInput").value = "";
     clearBtn.style.display = "none";
 
-    // Uncheck radio buttons
+
     document.querySelectorAll('input[name="category"]').forEach(radio => {
         radio.checked = false;
     });
 
     lastChecked = null;
 
-    // Clear price inputs
     document.querySelector('input[name="min"]').value = "";
     document.querySelector('input[name="max"]').value = "";
 
-    // Reload all products
+
     fetch("fetch_products.php")
         .then(response => response.text())
         .then(data => {
@@ -377,7 +319,7 @@ function resetFilters() {
 
 let cartRefreshInterval = null;
 
-/* ===== LOAD CART ===== */
+
 function loadCartModal() {
     fetch('cart_modal_data.php?t=' + new Date().getTime(), { cache: 'no-store' })
         .then(res => res.json())
@@ -389,9 +331,16 @@ function loadCartModal() {
             totalEl.innerText = parseFloat(data.total).toFixed(2);
             container.innerHTML = '';
 
-            if (data.items.length === 0) {
+           if (data.items.length === 0) {
                 container.innerHTML = '<p>Your cart is empty.</p>';
+
+                const checkoutBtn = document.querySelector('.checkout-btn');
+                if (checkoutBtn) checkoutBtn.disabled = true;
+
                 return;
+            } else {
+                const checkoutBtn = document.querySelector('.checkout-btn');
+                if (checkoutBtn) checkoutBtn.disabled = false;
             }
 
             data.items.forEach(item => {
@@ -428,7 +377,7 @@ function loadCartModal() {
         });
 }
 
-/* ===== UPDATE QTY ===== */
+
 function updateQty(name, action) {
     fetch('cart_update.php', {
         method: 'POST',
@@ -442,7 +391,7 @@ function updateQty(name, action) {
     });
 }
 
-/* ===== REMOVE TAG MESSAGE ===== */
+
 function showRemoveMessage(tagIds) {
     const messageEl = document.getElementById("removeTagMessage");
 
@@ -461,7 +410,7 @@ function showRemoveMessage(tagIds) {
     }, 4000);
 }
 
-/* ===== MODALS ===== */
+
 function openCart() {
     document.getElementById('cartModal').style.display = 'block';
     loadCartModal();
@@ -495,7 +444,7 @@ const filterForm = document.getElementById("filterForm");
 
 if (filterForm) {
     filterForm.addEventListener("submit", function(e) {
-        e.preventDefault(); // stop page refresh
+        e.preventDefault(); 
 
         const formData = new FormData(filterForm);
         const params = new URLSearchParams(formData).toString();
@@ -508,7 +457,7 @@ if (filterForm) {
     });
 }
 
-/* ===== AUTO OPEN QR ===== */
+
 <?php if (isset($_SESSION['qr_checkout'])): ?>
 document.getElementById('qrModal').style.display = 'block';
 <?php unset($_SESSION['qr_checkout']); endif; ?>

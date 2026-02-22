@@ -32,7 +32,7 @@ if(isset($_POST['login'])){
 
 <div class="login-wrapper">
 
-    <!-- LEFT SIDE -->
+
     <div class="login-left">
         <div class="brand">
             APPARELEASE
@@ -52,7 +52,7 @@ if(isset($_POST['login'])){
 
     </div>
 
-    <!-- RIGHT SIDE -->
+
     <div class="login-right">
         <div class="login-box">
             <h2>ADMIN PANEL</h2>
