@@ -1,25 +1,31 @@
 <?php
-include 'db.php';
+include "db.php";
 
 $payload = file_get_contents("php://input");
 $event = json_decode($payload, true);
 
-if ($event['data']['attributes']['type'] == "checkout_session.payment.paid") {
+$type = $event['data']['attributes']['type'] ?? null;
 
-    $reference = $event['data']['attributes']['data']['attributes']['line_items'][0]['name'];
-    $order_id = str_replace("ApparelEase Order #", "", $reference);
+if ($type === "checkout_session.payment.paid") {
 
+    $order_id = $event['data']['attributes']['data']['attributes']['payments'][0]['attributes']['metadata']['order_id'] ?? null;
 
-    mysqli_query($conn, "UPDATE orders SET payment_status='paid' WHERE id='$order_id'");
+    if ($order_id) {
 
+     
+        mysqli_query($conn, "UPDATE orders SET payment_status='paid' WHERE id='$order_id'");
 
-    $cartItems = mysqli_query($conn, "SELECT product_id FROM cart");
+        $cart_items = mysqli_query($conn, "SELECT product_id FROM cart");
 
-    while ($row = mysqli_fetch_assoc($cartItems)) {
-        $pid = $row['product_id'];
-        mysqli_query($conn, "UPDATE products SET status='out_of_stock' WHERE id='$pid'");
+        while ($item = mysqli_fetch_assoc($cart_items)) {
+
+            $product_id = $item['product_id'];
+
+            mysqli_query($conn, "UPDATE products SET status='out_of_stock'WHERE id='$product_id'");
+        }
+
+        mysqli_query($conn, "DELETE FROM cart");
     }
-
-
-    mysqli_query($conn, "DELETE FROM cart");
 }
+
+http_response_code(200);

@@ -5,7 +5,7 @@ ini_set('display_errors', 1);
 session_start();
 include 'db.php';
 
-$secretKey = "sk_test_XXXXXXXXXXXX";
+$secretKey = "sk_test_GET_KEY_IN_PAYMONGO_SITE";
 
 
 $res = mysqli_query($conn, "
@@ -24,6 +24,12 @@ if ($totalPeso <= 0) {
 $total = intval($totalPeso * 100);
 
 
+
+mysqli_query($conn, "INSERT INTO orders (total_amount, payment_status, created_at)VALUES 
+            ($totalPeso, 'pending', NOW())");
+
+$order_id = mysqli_insert_id($conn);
+
 $data = [
     "data" => [
         "attributes" => [
@@ -36,8 +42,12 @@ $data = [
                 ]
             ],
             "payment_method_types" => ["gcash", "card", "paymaya"],
-            "success_url" => "https://apparelease.fit//shop.php",
-            "cancel_url" => "https://apparelease.fit//shop.php"
+            "success_url" => "https://apparelease.fit/shop.php",
+            "cancel_url" => "https://apparelease.fit/shop.php",
+
+            "metadata" => [
+                "order_id" => $order_id
+            ]
         ]
     ]
 ];
