@@ -1,11 +1,7 @@
 <?php
 include 'db.php';
 
-$sql = "
-SELECT MIN(id) AS id, name, description, price, image
-FROM products
-WHERE 1=1
-";
+$sql = "SELECT MIN(id) AS id, name, description, price, image FROM products WHERE 1=1";
 
 
 if (isset($_GET['search']) && $_GET['search'] != "") {

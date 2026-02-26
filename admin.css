@@ -27,17 +27,17 @@ body{
     font-size:28px;
 }
 
-.logout-btn{
-    padding:10px 20px;
-    background:#7A3E00;
-    color:#fff;
-    text-decoration:none;
-    border-radius:20px;
-    transition:.3s;
+.logout-btn {
+    padding: 10px 22px;
+    background: #7A3E00;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 25px;
+    transition: 0.3s;
 }
 
-.logout-btn:hover{
-    background:#5c2f00;
+.logout-btn:hover {
+    background: #5c2f00;
 }
 
 .table-container{
@@ -162,3 +162,30 @@ table td:nth-child(8){
     background-color: #c0392b;
 }
 
+.header-left h3 {
+    margin-top: 5px;
+    font-weight: 400;
+    color: #555;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.orders-btn {
+    padding: 10px 22px;
+    background: #2563eb; 
+    color: #fff;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 500;
+    transition: 0.3s ease;
+    display: inline-block;
+}
+
+.orders-btn:hover {
+    background: #1e4ed8;  
+    transform: translateY(-2px);
+}

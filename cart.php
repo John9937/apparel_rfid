@@ -1,12 +1,8 @@
 <?php
 include 'db.php';
 
-$sql = "SELECT products.name,
-               products.price,
-               products.image,
-               SUM(cart.quantity) AS qty
-        FROM cart
-        JOIN products ON products.id = cart.product_id
+$sql = "SELECT products.name,products.price,products.image,SUM(cart.quantity) AS qty
+        FROM cart JOIN products ON products.id = cart.product_id 
         GROUP BY products.name, products.price, products.image";
 
 $result = mysqli_query($conn, $sql);

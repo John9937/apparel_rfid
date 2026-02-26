@@ -36,9 +36,15 @@ $result = mysqli_query($conn, "SELECT * FROM products");
 <div class="admin-wrapper">
 
     <div class="admin-header">
-        <h1>Product Database</h1>
-        <h3>Welcome, <?php echo $_SESSION['name']; ?>!</h3>
-        <a href="admin_logout.php" class="logout-btn">Logout</a>
+        <div class="header-left">
+            <h1>Product Database</h1>
+            <h3>Welcome, <?php echo $_SESSION['name']; ?>!</h3>
+        </div>
+
+        <div class="header-actions">
+            <a href="order_page.php" class="orders-btn">Orders</a>
+            <a href="admin_logout.php" class="logout-btn">Logout</a>
+        </div>
     </div>
 
     <div class="table-container">

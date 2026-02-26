@@ -11,10 +11,8 @@ if ($name === '' || $action === '') {
 
 if ($action === 'decrease') {
 
-    $sql = "SELECT cart.id AS cart_id, cart.product_id, products.tag_id
-            FROM cart
-            JOIN products ON products.id = cart.product_id
-            WHERE products.name = '$name'
+    $sql = "SELECT cart.id AS cart_id, cart.product_id, products.tag_id FROM cart
+            JOIN products ON products.id = cart.product_id WHERE products.name = '$name'
             LIMIT 1";
 
     $result = mysqli_query($conn, $sql);
@@ -42,10 +40,8 @@ if ($action === 'remove') {
 
     $tagIds = [];
 
-    $sql = "SELECT cart.id AS cart_id, cart.product_id, products.tag_id
-            FROM cart
-            JOIN products ON products.id = cart.product_id
-            WHERE products.name = '$name'";
+    $sql = "SELECT cart.id AS cart_id, cart.product_id, products.tag_id FROM cart
+            JOIN products ON products.id = cart.product_id WHERE products.name = '$name'";
 
     $result = mysqli_query($conn, $sql);
 

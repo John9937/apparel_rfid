@@ -1,9 +1,10 @@
 <?php
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
 session_start();
 include 'db.php';
+
+$error_check = mysqli_query($conn, "SELECT last_error FROM settings WHERE id=1");
+$error_row = mysqli_fetch_assoc($error_check);
+$rfid_error = $error_row['last_error'] ?? null;
 
 
 if (!isset($_SESSION['budget'])) {
@@ -12,11 +13,9 @@ if (!isset($_SESSION['budget'])) {
     $_SESSION['budget'] = $row['budget'] ?? 0;
 }
 
-$res = mysqli_query($conn, "
-    SELECT SUM(p.price * c.quantity) AS total
-    FROM cart c
-    JOIN products p ON p.id = c.product_id
-");
+$res = mysqli_query($conn, "SELECT SUM(p.price * c.quantity) AS total FROM cart c
+    JOIN products p ON p.id = c.product_id");
+    
 $row = mysqli_fetch_assoc($res);
 $total = $row['total'] ?? 0;
 
@@ -38,11 +37,7 @@ if (isset($_POST['set_budget'])) {
 }
 
 
-$sql = "
-SELECT MIN(id) AS id, name, description, price, image
-FROM products
-WHERE 1=1
-";
+$sql = "SELECT MIN(id) AS id, name, description, price, image FROM products WHERE 1=1";
 
 
 if (isset($_GET['search']) && $_GET['search'] != "") {
@@ -97,6 +92,7 @@ $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
         </div>
 
         <div class="nav-actions">
+            <h5>SET BUDGET :<h5> 
             <button class="budget-btn" onclick="openBudget()">
                 ₱<?= number_format($budget, 2) ?>
             </button>
@@ -276,6 +272,7 @@ if (searchInput) {
         clearBtn.style.display = this.value ? "block" : "none";
     });
 }
+
 
 function clearSearch() {
     searchInput.value = "";
@@ -466,6 +463,19 @@ document.getElementById('qrModal').style.display = 'block';
 alert("Payment successful!");
 <?php unset($_SESSION['qr_success']); endif; ?>
 
+setInterval(function() {
+    fetch('rfid_error.php')
+        .then(res => res.text())
+        .then(data => {
+            if (data === "SET_BUDGET_FIRST") {
+                alert("Please Set Budget First");
+            }
+
+            if (data === "BUDGET_EXCEEDED") {
+                alert("Budget Exceeded!");
+            }
+        });
+}, 1500); 
 </script>
 
 </body>
