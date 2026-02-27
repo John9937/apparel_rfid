@@ -18,6 +18,25 @@ $orders = mysqli_query($conn, "
 <head>
     <title>Orders | Admin</title>
     <link rel="stylesheet" href="admin.css">
+    <style>
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-badge.paid {
+            background-color: #16a34a;
+            color: white;
+        }
+
+        .status-badge.waiting {
+            background-color: #f59e0b;
+            color: white;
+        }
+</style>
 </head>
 <body style="background:#F5F3EF; padding:60px;">
 
@@ -37,7 +56,6 @@ $orders = mysqli_query($conn, "
                     <th>Status</th>
                     <th>Date</th>
                     <th>QR</th>
-                    <th>Claimed</th>
                 </tr>
             </thead>
 
@@ -46,7 +64,17 @@ $orders = mysqli_query($conn, "
                 <tr>
                     <td><?= $row['id'] ?></td>
                     <td>₱<?= number_format($row['total_amount'],2) ?></td>
-                    <td><?= $row['payment_status'] ?></td>
+
+                    <td>
+                    <?php if($row['payment_status'] == 'paid'): ?>
+                        <span class="status-badge paid">Paid</span>
+                    <?php elseif($row['payment_status'] == 'waiting_verification'): ?>
+                        <span class="status-badge waiting">Waiting Verification</span>
+                    <?php else: ?>
+                        <span class="status-badge"><?= $row['payment_status'] ?></span>
+                    <?php endif; ?>
+                    </td>
+
                     <td><?= $row['created_at'] ?></td>
                     <td>
                         <?php if($row['qr_token']): ?>
@@ -54,13 +82,6 @@ $orders = mysqli_query($conn, "
                                class="edit-btn">View</a>
                         <?php else: ?>
                             —
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if($row['claimed'] == 1): ?>
-                            <span class="status-badge in_stock">Scanned</span>
-                        <?php else: ?>
-                            <span class="status-badge out_of_stock">Not Scanned</span>
                         <?php endif; ?>
                     </td>
                 </tr>

@@ -14,7 +14,7 @@ if (!$token) {
     die("Invalid QR.");
 }
 
-$order = mysqli_query($conn, "SELECT * FROM orders WHERE qr_token='$token' AND payment_status='paid'");
+$order = mysqli_query($conn, "SELECT * FROM orders WHERE qr_token='$token'");
 
 if (mysqli_num_rows($order) == 0) {
     die("Order not found or unpaid.");
@@ -22,14 +22,45 @@ if (mysqli_num_rows($order) == 0) {
 
 $order_data = mysqli_fetch_assoc($order);
 
-$alreadyClaimed = false;
+if(isset($_POST['mark_paid']) && $order_data['payment_status'] == 'waiting_verification'){
 
-if ($order_data['claimed'] == 1) {
-    $alreadyClaimed = true;
-}
+    $orderId = $order_data['id'];
 
-if (!$alreadyClaimed) {
-    mysqli_query($conn, "UPDATE orders SET claimed = 1 WHERE id = '".$order_data['id']."'");
+
+    mysqli_query($conn, "UPDATE orders SET payment_status='paid' 
+        WHERE id='$orderId'");
+
+
+    $items = mysqli_query($conn, "SELECT product_id FROM order_items 
+    WHERE order_id='$orderId'
+    ");
+
+    $productIds = [];
+
+    while($item = mysqli_fetch_assoc($items)){
+        $productIds[] = $item['product_id'];
+
+        mysqli_query($conn, "
+            UPDATE products 
+            SET status='out_of_stock' 
+            WHERE id='".$item['product_id']."'
+        ");
+    }
+
+ 
+    if(!empty($productIds)){
+        $ids = implode(",", $productIds);
+        mysqli_query($conn, "DELETE FROM cart WHERE product_id IN ($ids)");
+    }
+
+
+    mysqli_query($conn, "UPDATE settings SET budget = 0 WHERE id = 1");
+
+    echo "<script>
+        alert('Order marked as PAID');
+        window.location.href='order_page.php';
+    </script>";
+    exit;
 }
 
 ?>
@@ -109,20 +140,29 @@ body {
 </style>
 </head>
 
-<script>
-<?php if ($alreadyClaimed): ?>
-    alert("This order has already been claimed.");
-<?php else: ?>
-    alert("Order successfully verified.");
-<?php endif; ?>
-</script>
-
 <body>
 
 <div class="receipt">
     <h2>Order #<?php echo $order_data['id']; ?></h2>
     <p><strong>Total:</strong> ₱<?php echo $order_data['total_amount']; ?></p>
     <p><strong>Date:</strong> <?php echo $order_data['created_at']; ?></p>
+    <?php if($order_data['payment_status'] == 'waiting_verification'): ?>
+        <form method="POST">
+            <button name="mark_paid" 
+                    style="
+                        background:#16a34a;
+                        color:white;
+                        padding:12px 25px;
+                        border:none;
+                        border-radius:25px;
+                        font-weight:600;
+                        cursor:pointer;
+                        margin-top:20px;
+                    ">
+                Mark as Paid
+            </button>
+        </form>
+    <?php endif; ?>
     
     <div class="items">
         <h3>Items Purchased</h3>

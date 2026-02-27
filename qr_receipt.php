@@ -12,19 +12,21 @@ if (mysqli_num_rows($order) == 0) {
 
 $order_data = mysqli_fetch_assoc($order);
 
-if($order_data['claimed'] == 1){
-   
-    $_SESSION['budget'] = 0;
-    echo "<script>alert('Order verified! Redirecting to shop...');
-            window.location.href='index.php';</script>";
+if($order_data['payment_status'] == 'paid'){
+    echo "<script>
+        alert('Payment Confirmed! Redirecting...');
+        window.location.href='index.php';
+    </script>";
+    exit;
 }
+?>
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
 
-<meta http-equiv="refresh" content="3">
+<meta http-equiv="refresh" content="6">
 
 <title>Payment Successful</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">

@@ -1,0 +1,73 @@
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #4b2e14, #8b5a2b);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.card {
+    background: rgba(255,255,255,0.95);
+    padding: 50px;
+    border-radius: 25px;
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+}
+
+.card h2 {
+    color: #7a3e00;
+    margin-bottom: 30px;
+}
+
+.payment-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.payment-btn {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 30px;
+    font-weight: 600;
+    cursor: pointer;
+    color: white;
+    transition: 0.3s ease;
+}
+
+.payment-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* Payment Colors */
+.gcash { background-color: #007dff; }
+.paymaya { background-color: #16a34a; }
+.gotyme { background-color: #60a5fa; }
+
+.qr-section {
+    margin-top: 30px;
+}
+
+.qr-section img {
+    width: 220px;
+    border-radius: 15px;
+    padding: 15px;
+    background: #f9f6f2;
+}
+
+.confirm-btn {
+    margin-top: 20px;
+    background: #7a3e00;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+}

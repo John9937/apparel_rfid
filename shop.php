@@ -2,16 +2,15 @@
 session_start();
 include 'db.php';
 
+$res = mysqli_query($conn, "SELECT budget FROM settings WHERE id = 1");
+$row = mysqli_fetch_assoc($res);
+$budget = $row['budget'] ?? 0;
+
 $error_check = mysqli_query($conn, "SELECT last_error FROM settings WHERE id=1");
 $error_row = mysqli_fetch_assoc($error_check);
 $rfid_error = $error_row['last_error'] ?? null;
 
 
-if (!isset($_SESSION['budget'])) {
-    $res = mysqli_query($conn, "SELECT budget FROM settings WHERE id = 1");
-    $row = mysqli_fetch_assoc($res);
-    $_SESSION['budget'] = $row['budget'] ?? 0;
-}
 
 $res = mysqli_query($conn, "SELECT SUM(p.price * c.quantity) AS total FROM cart c
     JOIN products p ON p.id = c.product_id");
@@ -22,20 +21,12 @@ $total = $row['total'] ?? 0;
 
 if (isset($_POST['set_budget'])) {
     $newBudget = floatval($_POST['budget']);
-    $_SESSION['budget'] = $newBudget;
-
-    if (!isset($_SESSION['budget_history'])) {
-        $_SESSION['budget_history'] = [];
-    }
-
-    $_SESSION['budget_history'][] = $newBudget;
 
     mysqli_query($conn, "UPDATE settings SET budget = $newBudget WHERE id = 1");
 
     header("Location: shop.php");
     exit;
 }
-
 
 $sql = "SELECT MIN(id) AS id, name, description, price, image FROM products WHERE 1=1";
 
@@ -68,7 +59,7 @@ $sql .= " GROUP BY name, description, price, image";
 
 $products = mysqli_query($conn, $sql);
 
-$budget = $_SESSION['budget'] ?? 0;
+
 $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
 
 ?>
@@ -217,15 +208,6 @@ $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
             <button class="checkout-btn" name="set_budget">Save Budget</button>
         </form>
 
-        <?php if (!empty($_SESSION['budget_history'])): ?>
-            <hr>
-            <h3>Previous Budgets</h3>
-            <ul>
-                <?php foreach (array_reverse($_SESSION['budget_history']) as $b): ?>
-                    <li>₱<?= number_format($b, 2) ?></li>
-                <?php endforeach; ?>
-            </ul>
-        <?php endif; ?>
     </div>
 </div>
 
@@ -249,7 +231,7 @@ $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
 
         <form action="create_checkout.php" method="POST">
             <button class="checkout-btn">
-                Checkout (PayMongo)
+                Go To checkout
             </button>
         </form>
     </div>
