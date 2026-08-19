@@ -1,0 +1,336 @@
+/* ===== BASE ===== */
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: #f3efe9;
+}
+
+.main {
+    padding: 30px 40px;
+}
+
+/* ===== TOP BAR ===== */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.page-title {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.btn-back {
+    background: #8B5E34;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 18px;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+.btn-back:hover {
+    background: #6d4728;
+}
+
+/* ===== CARD ===== */
+.card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 14px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+}
+
+/* ===== SCAN CARD ===== */
+.scan-card {
+    position: relative; /* IMPORTANT for toast */
+}
+
+/* ===== FORM ===== */
+label {
+    display: block;
+    font-size: 14px;
+    color: #444;
+    margin-bottom: 6px;
+}
+
+input, select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    width: 100%;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: #8B5E34;
+}
+
+/* ===== INLINE FORM ===== */
+.form-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.form-row input {
+    flex: 1;
+}
+
+.form-row select {
+    width: 180px;
+}
+
+/* ===== BUTTON ===== */
+.btn-primary {
+    background: #8B5E34;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-primary:hover {
+    background: #6d4728;
+}
+
+/* ===== TABLE ===== */
+.stock-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.stock-table th {
+    text-align: left;
+    padding: 12px;
+    background: #f5f5f5;
+    font-size: 14px;
+    color: #555;
+}
+
+.stock-table td {
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+    font-size: 14px;
+}
+
+.stock-table tr:hover {
+    background: #fafafa;
+}
+
+/* ===== STATUS BADGE ===== */
+.badge {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.badge.in_stock {
+    background: #d4edda;
+    color: #2e7d32;
+}
+
+.badge.in_cart {
+    background: #fff4e5;
+    color: #e68900;
+}
+
+.badge.out_of_stock {
+    background: #fdecea;
+    color: #c62828;
+}
+
+/* ===== TOAST (INSIDE SCAN RFID) ===== */
+.toast {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: #e74c3c;
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+    opacity: 0;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ===== TOAST TYPES ===== */
+.toast.success {
+    background: #27ae60;
+}
+
+.toast.error {
+    background: #e74c3c;
+}
+
+.stock-table tr:first-child {
+    animation: fadeIn 0.3s ease;
+}
+
+/* SCAN ROW */
+.scan-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* SHORTER INPUT */
+#rfid_input {
+    width: 320px; /* 🔥 adjust size here */
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+/* CLEAR BUTTON */
+.btn-clear {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.btn-clear:hover {
+    background: #6d4728;;
+}
+/* HEADER WITH SEARCH */
+.stock-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* SEARCH INPUT */
+#searchStock {
+    width: 260px;
+    padding: 10px 14px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+#searchStock:focus {
+    border-color: #8B5E34;
+    box-shadow: 0 0 0 2px rgba(139,94,52,0.1);
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+    transform: translateY(-1px);
+}
+/* MODAL BACKDROP */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+/* SHOW */
+.modal.show {
+    display: flex;
+}
+
+/* BOX */
+.modal-box {
+    background: white;
+    padding: 30px;
+    border-radius: 16px;
+    width: 320px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* TITLE */
+.modal-box h3 {
+    color: #8B4A00;
+    margin-bottom: 10px;
+}
+
+/* TEXT */
+.modal-box p {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+/* ACTIONS */
+.modal-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-restore {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-right: 8px; /* spacing from remove */
+}
+.stock-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#statusFilter {
+    padding: 10px 14px;
+    border-radius: 20px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    outline: none;
+    cursor: pointer;
+}
+
+#statusFilter:focus {
+    border-color: #8B5E34;
+    box-shadow: 0 0 0 2px rgba(139,94,52,0.1);
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(-5px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+

@@ -8,47 +8,54 @@ if (!isset($_SESSION['admin'])) {
 }
 
 $orders = mysqli_query($conn, "
-    SELECT id, total_amount, payment_status, created_at, qr_token, claimed
+    SELECT id, total_amount, payment_status, created_at, qr_token
     FROM orders
     ORDER BY id DESC
 ");
 ?>
+
 <!DOCTYPE html>
 <html>
 <head>
     <title>Orders | Admin</title>
-    <link rel="stylesheet" href="admin.css">
-    <style>
-        .status-badge {
-            padding: 6px 14px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            display: inline-block;
-        }
+    <link rel="stylesheet" href="order_page.css">
 
-        .status-badge.paid {
-            background-color: #16a34a;
-            color: white;
-        }
-
-        .status-badge.waiting {
-            background-color: #f59e0b;
-            color: white;
-        }
-</style>
+    <!-- AUTO REFRESH (REAL-TIME FEEL) -->
+    <meta http-equiv="refresh" content="5">
 </head>
-<body style="background:#F5F3EF; padding:60px;">
 
-<div class="admin-wrapper">
+<script>
+setTimeout(() => {
+    const banner = document.getElementById("successBanner");
+    if (banner) {
+        banner.style.opacity = "0";
+        banner.style.transform = "translateY(-10px)";
+        
+        setTimeout(() => banner.remove(), 300);
+    }
+}, 2000);
+</script>
 
-    <div class="admin-header">
-        <h1>All Orders</h1>
-        <a href="admin.php" class="orders-btn">← Back</a>
+<body>
+
+<?php if(isset($_GET['success'])): ?>
+    <div class="success-banner" id="successBanner">
+        ✅ Order marked as paid
+    </div>
+<?php endif; ?>
+
+<div class="main">
+
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <h2 class="page-title">All Orders</h2>
+        <a href="admin.php" class="btn btn-back">← Back to Dashboard</a>
     </div>
 
-    <div class="table-container">
-        <table>
+    <!-- TABLE CARD -->
+    <div class="card">
+        <div class="table-wrapper">
+        <table class="orders-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -62,33 +69,52 @@ $orders = mysqli_query($conn, "
             <tbody>
                 <?php while($row = mysqli_fetch_assoc($orders)): ?>
                 <tr>
-                    <td><?= $row['id'] ?></td>
-                    <td>₱<?= number_format($row['total_amount'],2) ?></td>
 
-                    <td>
-                    <?php if($row['payment_status'] == 'paid'): ?>
-                        <span class="status-badge paid">Paid</span>
-                    <?php elseif($row['payment_status'] == 'waiting_verification'): ?>
-                        <span class="status-badge waiting">Waiting Verification</span>
-                    <?php else: ?>
-                        <span class="status-badge"><?= $row['payment_status'] ?></span>
-                    <?php endif; ?>
+                    <!-- ORDER ID -->
+                    <td>#<?= $row['id'] ?></td>
+
+                    <!-- TOTAL -->
+                    <td class="price">
+                        ₱<?= number_format($row['total_amount'],2) ?>
                     </td>
 
-                    <td><?= $row['created_at'] ?></td>
+                    <!-- STATUS -->
                     <td>
-                        <?php if($row['qr_token']): ?>
-                            <a href="order_view.php?token=<?= $row['qr_token'] ?>" 
-                               class="edit-btn">View</a>
+                        <?php $status = $row['payment_status']; ?>
+
+                        <?php if($status == 'paid'): ?>
+                            <span class="badge paid">Paid</span>
+
+                        <?php elseif($status == 'waiting_verification'): ?>
+                            <span class="badge waiting">Waiting Verification</span>
+
                         <?php else: ?>
-                            —
+                            <span class="badge pending">Pending</span>
                         <?php endif; ?>
                     </td>
+
+                    <!-- DATE -->
+                    <td class="date">
+                        <?= date("M d, Y h:i A", strtotime($row['created_at'])) ?>
+                    </td>
+
+                    <!-- QR -->
+                    <td>
+                        <?php if(!empty($row['qr_token'])): ?>
+                        <a href="order_view.php?token=<?= $row['qr_token'] ?>&from=orders" class="btn btn-primary">
+                            View QR
+                        </a>
+                        <?php else: ?>
+                        <span class="btn btn-disabled">No QR</span>
+                        <?php endif; ?>
+                    </td>
+
                 </tr>
                 <?php endwhile; ?>
             </tbody>
 
         </table>
+
     </div>
 
 </div>

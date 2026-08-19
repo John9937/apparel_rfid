@@ -1,33 +1,31 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 include "db.php";
 
-$order_id = $_GET['order_id'];
+$order_id = isset($_GET['order_id']) ? intval($_GET['order_id']) : 0;
+
+if ($order_id <= 0) {
+    die("Invalid order ID.");
+}
 
 $order = mysqli_query($conn, "SELECT * FROM orders WHERE id='$order_id'");
 
+if (!$order) {
+    die("Query error: " . mysqli_error($conn));
+}
+
 if (mysqli_num_rows($order) == 0) {
-    die("No paid order found.");
+    die("Order not found. (ID: $order_id)");
 }
 
 $order_data = mysqli_fetch_assoc($order);
-
-if($order_data['payment_status'] == 'paid'){
-    echo "<script>
-        alert('Payment Confirmed! Redirecting...');
-        window.location.href='index.php';
-    </script>";
-    exit;
-}
 ?>
-?>
-
 <!DOCTYPE html>
 <html>
 <head>
-
-<meta http-equiv="refresh" content="6">
-
 <title>Payment Successful</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
@@ -40,13 +38,9 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow: hidden;
 }
 
-
-
 .card {
-    position: relative;
     background: rgba(255,255,255,0.95);
     padding: 50px;
     border-radius: 25px;
@@ -59,21 +53,11 @@ body {
 .card h2 {
     color: #7a3e00;
     margin-bottom: 10px;
-    font-size: 28px;
 }
 
 .order-info {
     margin-bottom: 25px;
     color: #444;
-}
-
-.order-info p {
-    margin: 5px 0;
-    font-weight: 500;
-}
-
-.qr-box {
-    margin: 20px 0;
 }
 
 .qr-box img {
@@ -88,27 +72,87 @@ body {
     font-weight: 500;
     color: #7a3e00;
 }
+
+/* MODAL */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-box {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    text-align: center;
+}
 </style>
 </head>
 
 <body>
 
 <div class="card">
-    <h2>Payment Successful</h2>
+    <h2>Payment Verification</h2>
 
     <div class="order-info">
-        <p><strong>Order #<?php echo $order_data['id']; ?></strong></p>
-        <p>Total: ₱<?php echo $order_data['total_amount']; ?></p>
+        <p><strong>Order #<?= $order_data['id']; ?></strong></p>
+        <p>Total: ₱<?= $order_data['total_amount']; ?></p>
     </div>
 
     <div class="qr-box">
-        <img src="<?php echo $order_data['qr_code_path']; ?>">
+        <img src="<?= !empty($order_data['qr_code_path']) ? $order_data['qr_code_path'] : 'no-image.png'; ?>">
     </div>
 
     <div class="note">
         Please show this QR to the counter for verification.
     </div>
 </div>
+
+<!-- MODAL -->
+<div id="paymentModal" class="modal">
+    <div class="modal-box">
+        <h3>✅ Payment Confirmed</h3>
+        <p>Redirecting to home...</p>
+    </div>
+</div>
+
+<!-- ✅ FIXED SCRIPT (ONLY ONE, AT BOTTOM) -->
+<script>
+let alreadyPaid = false;
+
+function checkPayment() {
+    if (alreadyPaid) return;
+
+    fetch("check_payment.php?order_id=<?= $order_id ?>")
+    .then(res => res.json())
+    .then(data => {
+        console.log("STATUS:", data.status);
+
+        if (data.status === "paid") {
+            alreadyPaid = true;
+
+            document.getElementById("paymentModal").classList.add("show");
+
+            setTimeout(() => {
+                window.location.href = "index.php";
+            }, 2000);
+        }
+    })
+    .catch(err => console.error(err));
+}
+
+// start after page loads
+window.onload = function () {
+    setInterval(checkPayment, 2000);
+};
+</script>
 
 </body>
 </html>

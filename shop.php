@@ -1,4 +1,6 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 session_start();
 include 'db.php';
 
@@ -28,8 +30,24 @@ if (isset($_POST['set_budget'])) {
     exit;
 }
 
-$sql = "SELECT MIN(id) AS id, name, description, price, image FROM products WHERE 1=1";
+$sql = "SELECT 
+    p.id,
+    p.name,
+    p.description,
+    p.price,
+    p.image,
 
+    COUNT(CASE WHEN pi.status='in_stock' THEN 1 END) AS stock,
+
+    SUM(CASE WHEN pi.size='Small' AND pi.status='in_stock' THEN 1 ELSE 0 END) AS small_stock,
+    SUM(CASE WHEN pi.size='Medium' AND pi.status='in_stock' THEN 1 ELSE 0 END) AS medium_stock,
+    SUM(CASE WHEN pi.size='Large' AND pi.status='in_stock' THEN 1 ELSE 0 END) AS large_stock
+
+FROM products p
+LEFT JOIN product_items pi 
+    ON pi.product_id = p.id
+
+WHERE 1=1";
 
 if (isset($_GET['search']) && $_GET['search'] != "") {
     $search = $_GET['search'];
@@ -55,7 +73,7 @@ if (isset($_GET['max']) && $_GET['max'] != "") {
 }
 
 
-$sql .= " GROUP BY name, description, price, image";
+$sql .= " GROUP BY p.id";
 
 $products = mysqli_query($conn, $sql);
 
@@ -71,8 +89,34 @@ $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
     <link rel="stylesheet" href="shop.css">
 </head>
 
-<body>
+<div id="productModal" class="modal">
+  <div class="modal-content product-modal">
 
+    <button class="modal-close" onclick="closeProductModal()">×</button>
+
+    <img id="modalImage" class="modal-img">
+
+    <h2 id="modalName"></h2>
+    <p id="modalDescription" class="modal-desc"></p>
+    
+    <div class="size-selector">
+        <button onclick="setSize('Small', this)">S</button>
+        <button onclick="setSize('Medium', this)">M</button>
+        <button onclick="setSize('Large', this)">L</button>
+    </div>
+
+    <div class="modal-details">
+        <p><strong>Price:</strong> ₱<span id="modalPrice"></span></p>
+        <p><strong>Stock:</strong> <span id="modalStock"></span></p>
+    </div>
+
+
+
+  </div>
+</div>
+
+<body>
+<div id="globalToast" class="global-toast"></div>
 
 <header class="navbar">
     <div class="navbar-container">
@@ -90,14 +134,12 @@ $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
 
             <button class="cart-pill" onclick="openCart()">
                 Cart
+                <span id="cartCount" class="cart-badge">0</span>
             </button>
         </div>
 
     </div>
 </header>
-
-
-
 
 <main class="shop-layout">
 
@@ -183,20 +225,30 @@ $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
         <h1 class="shop-title">New Arrivals</h1>
 
         <div class="product-grid">
-            <?php while ($row = mysqli_fetch_assoc($products)): ?>
-                <div class="product-card">
-                    <img src="products/<?= htmlspecialchars($row['image']) ?>">
-                    <h3><?= htmlspecialchars($row['name']) ?></h3>
-                    <p><?= htmlspecialchars($row['description']) ?></p>
-                    <strong>₱<?= number_format($row['price'], 2) ?></strong>
-                </div>
-            <?php endwhile; ?>
+        <?php while ($row = mysqli_fetch_assoc($products)): ?>
+            <div class="product-card"
+            onclick="openProductModal(
+                '<?= htmlspecialchars($row['name'], ENT_QUOTES) ?>',
+                '<?= htmlspecialchars($row['description'], ENT_QUOTES) ?>',
+                '<?= number_format($row['price'],2) ?>',
+                '<?= htmlspecialchars($row['image'], ENT_QUOTES) ?>',
+                <?= $row['stock'] ?? 0 ?>,
+                <?= $row['small_stock'] ?? 0 ?>,
+                <?= $row['medium_stock'] ?? 0 ?>,
+                <?= $row['large_stock'] ?? 0 ?>
+            )">
+
+                <img src="products/<?= htmlspecialchars($row['image']) ?>">
+                <h3><?= htmlspecialchars($row['name']) ?></h3>
+                <strong>₱<?= number_format($row['price'], 2) ?></strong>
+            </div>
+        <?php endwhile; ?>
         </div>
     </section>
 
 </main>
 
-
+<div id="sidebarOverlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <div id="budgetModal" class="modal">
     <div class="modal-content">
@@ -273,11 +325,8 @@ function toggleRadio(radio) {
 }
 
 function resetFilters() {
-
-
     document.getElementById("searchInput").value = "";
     clearBtn.style.display = "none";
-
 
     document.querySelectorAll('input[name="category"]').forEach(radio => {
         radio.checked = false;
@@ -287,7 +336,6 @@ function resetFilters() {
 
     document.querySelector('input[name="min"]').value = "";
     document.querySelector('input[name="max"]').value = "";
-
 
     fetch("fetch_products.php")
         .then(response => response.text())
@@ -299,96 +347,135 @@ function resetFilters() {
 let cartRefreshInterval = null;
 
 
-function loadCartModal() {
+// 🔥 NEW: BADGE FUNCTION (SEPARATED)
+function updateCartBadge() {
     fetch('cart_modal_data.php?t=' + new Date().getTime(), { cache: 'no-store' })
         .then(res => res.json())
         .then(data => {
+            const countEl = document.getElementById("cartCount");
 
-            const totalEl = document.getElementById('cartTotal');
-            const container = document.getElementById('cartItems');
-
-            totalEl.innerText = parseFloat(data.total).toFixed(2);
-            container.innerHTML = '';
-
-           if (data.items.length === 0) {
-                container.innerHTML = '<p>Your cart is empty.</p>';
-
-                const checkoutBtn = document.querySelector('.checkout-btn');
-                if (checkoutBtn) checkoutBtn.disabled = true;
-
-                return;
-            } else {
-                const checkoutBtn = document.querySelector('.checkout-btn');
-                if (checkoutBtn) checkoutBtn.disabled = false;
-            }
-
+            let totalQty = 0;
             data.items.forEach(item => {
-
-                const div = document.createElement("div");
-                div.className = "cart-item";
-
-                div.innerHTML = `
-                    <img src="products/${item.image}">
-                    <div>
-                        <h4>${item.name}</h4>
-                        <div style="display:flex;gap:8px;margin-top:6px;">
-                            <strong>${item.qty}</strong>
-                            <button class="qty-btn">−</button>
-                            <button class="remove-text">Remove</button>
-                        </div>
-                    </div>
-                `;
-
-                const decreaseBtn = div.querySelector(".qty-btn");
-                const removeBtn = div.querySelector(".remove-text");
-
-                decreaseBtn.addEventListener("click", function() {
-                    updateQty(item.name, "decrease");
-                });
-
-                removeBtn.addEventListener("click", function() {
-                    updateQty(item.name, "remove");
-                });
-
-                container.appendChild(div);
-
+                totalQty += parseInt(item.qty);
             });
+
+            if (totalQty > 0) {
+                countEl.innerText = totalQty > 99 ? "99+" : totalQty;
+                countEl.style.display = "flex";
+            } else {
+                countEl.style.display = "none";
+            }
         });
 }
 
 
-function updateQty(name, action) {
-    fetch('cart_update.php', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: `name=${encodeURIComponent(name)}&action=${action}`
+// 🔥 UPDATED CART MODAL (NO BADGE LOGIC HERE)
+function loadCartModal() {
+    fetch('cart_modal_data.php?t=' + new Date().getTime(), {
+        cache: 'no-store'
     })
-    .then(res => res.text())
-    .then(tagIds => {
-        if (tagIds) showRemoveMessage(tagIds);
-        loadCartModal();
+    .then(res => res.json())
+    .then(data => {
+
+        console.log("UPDATED CART:", data); // 👈 DEBUG
+
+        const totalEl = document.getElementById('cartTotal');
+        const container = document.getElementById('cartItems');
+
+        totalEl.innerText = parseFloat(data.total).toFixed(2);
+        container.innerHTML = '';
+
+        if (data.items.length === 0) {
+            container.innerHTML = '<p>Your cart is empty.</p>';
+            document.querySelector('.checkout-btn').disabled = true;
+            return;
+        }
+
+        document.querySelector('.checkout-btn').disabled = false;
+
+        data.items.forEach(item => {
+
+            const div = document.createElement("div");
+            div.className = "cart-item";
+
+            div.innerHTML = `
+                <img src="products/${item.image}">
+                <div>
+                    <h4>${item.name}</h4>
+                    <div style="display:flex;gap:8px;margin-top:6px;">
+                        <strong>${item.qty}</strong>
+                        <button class="qty-btn">−</button>
+                        <button class="remove-text">Remove</button>
+                    </div>
+                </div>
+            `;
+
+            div.querySelector(".qty-btn").onclick = () => {
+                updateQty(item.product_id, "decrease");
+            };
+
+            div.querySelector(".remove-text").onclick = () => {
+                updateQty(item.product_id, "remove");
+            };
+
+            container.appendChild(div);
+        });
     });
 }
 
+function updateQty(productId, action) {
 
-function showRemoveMessage(tagIds) {
+    console.log("SENDING:", productId, action);
+
+    fetch('cart_update.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `product_id=${productId}&action=${action}`
+    })
+    .then(res => res.text())
+    .then(res => {
+
+        console.log("RESPONSE:", res);
+
+        if (res && res !== "NOT_FOUND") {
+            showRemoveMessage(res);
+        }
+
+        // 🔥 FORCE SYNC
+        loadCartModal();
+        updateCartBadge();
+
+        // 🔥 ADD THIS
+        setTimeout(() => {
+            fetch("dashboard_data.php", { cache: "no-store" });
+        }, 300);
+    });
+}
+function showRemoveMessage(response) {
+
     const messageEl = document.getElementById("removeTagMessage");
 
     if (!messageEl) return;
 
-    if (tagIds.includes(",")) {
-        messageEl.innerText = `Please remove tags ${tagIds} from the cart`;
-    } else {
-        messageEl.innerText = `Please remove tag ${tagIds} from the cart`;
+    let parts = response.split(":");
+
+    let type = parts[0];
+    let rfids = parts[1] || "";
+
+    if (type === "REMOVED_ONE") {
+        messageEl.innerText = `Remove item with RFID: ${rfids}`;
+    }
+
+    if (type === "REMOVED_ALL") {
+        messageEl.innerText = `Remove these RFIDs: ${rfids}`;
     }
 
     messageEl.style.display = "block";
 
     setTimeout(() => {
         messageEl.style.display = "none";
-    }, 4000);
+    }, 5000);
 }
-
 
 function openCart() {
     document.getElementById('cartModal').style.display = 'block';
@@ -415,15 +502,20 @@ function closeQR() {
 
 
 function toggleSidebar() {
-    document.querySelector('.shop-sidebar').classList.toggle('active');
-}
+    const sidebar = document.querySelector('.shop-sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
 
+    sidebar.classList.toggle('active');
+    overlay.classList.toggle('active');
+
+    document.body.classList.toggle('no-scroll');
+}
 
 const filterForm = document.getElementById("filterForm");
 
 if (filterForm) {
     filterForm.addEventListener("submit", function(e) {
-        e.preventDefault(); 
+        e.preventDefault();
 
         const formData = new FormData(filterForm);
         const params = new URLSearchParams(formData).toString();
@@ -435,6 +527,13 @@ if (filterForm) {
             });
     });
 }
+
+
+// 🔥 AUTO LOAD BADGE ON PAGE LOAD
+updateCartBadge();
+
+// 🔥 AUTO REFRESH LIKE REAL APPS
+setInterval(updateCartBadge, 2000);
 
 
 <?php if (isset($_SESSION['qr_checkout'])): ?>
@@ -449,16 +548,109 @@ setInterval(function() {
     fetch('rfid_error.php')
         .then(res => res.text())
         .then(data => {
+
             if (data === "SET_BUDGET_FIRST") {
-                alert("Please Set Budget First");
+                showToast("Please set budget first", "warning");
             }
 
             if (data === "BUDGET_EXCEEDED") {
-                alert("Budget Exceeded!");
+                showToast("Budget exceeded", "error");
             }
-        });
-}, 1500); 
-</script>
 
+            if (data === "ALREADY_SCANNED") {
+                showToast("Item already scanned", "warning");
+            }
+
+            else if (data === "RFID_NOT_REGISTERED") {
+                showToast("RFID tag is not registered", "error");
+            }
+
+            else if (data === "RFID_UNAVAILABLE") {
+                showToast("RFID Unavailable", "error");
+            }
+
+        });
+}, 1500);
+
+let sizeStocks = {
+    Small: 0,
+    Medium: 0,
+    Large: 0
+};
+
+function openProductModal(name, description, price, image, total, small, medium, large) {
+
+    document.getElementById("modalName").innerText = name;
+    document.getElementById("modalDescription").innerText = description;
+    document.getElementById("modalPrice").innerText = price;
+    document.getElementById("modalImage").src = "products/" + image;
+
+    sizeStocks.Small = small;
+    sizeStocks.Medium = medium;
+    sizeStocks.Large = large;
+
+    document.getElementById("modalStock").innerText = total;
+
+    // 🔥 disable buttons based on stock
+    const buttons = document.querySelectorAll(".size-selector button");
+
+    buttons.forEach(btn => {
+        const sizeMap = {
+            S: "Small",
+            M: "Medium",
+            L: "Large"
+        };
+
+        const size = sizeMap[btn.innerText];
+
+        if (sizeStocks[size] <= 0) {
+            btn.disabled = true;
+            btn.classList.remove("active");
+        } else {
+            btn.disabled = false;
+        }
+    });
+
+    document.getElementById("productModal").style.display = "block";
+    document.querySelectorAll(".size-selector button").forEach(btn => {
+    btn.classList.remove("active");
+});
+}
+
+function setSize(size, el) {
+    // update stock
+    document.getElementById("modalStock").innerText = sizeStocks[size] ?? 0;
+
+    // remove active from all
+    document.querySelectorAll(".size-selector button").forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    // add active to clicked
+    el.classList.add("active");
+}
+
+function closeProductModal() {
+    document.getElementById("productModal").style.display = "none";
+}
+
+// close when clicking outside
+window.addEventListener("click", function(e) {
+    const modal = document.getElementById("productModal");
+    if (e.target === modal) {
+        modal.style.display = "none";
+    }
+});
+
+function showToast(message, type="success") {
+    const toast = document.getElementById("globalToast");
+    toast.innerText = message;
+    toast.className = `global-toast show ${type}`;
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2500);
+}
+</script>
 </body>
 </html>

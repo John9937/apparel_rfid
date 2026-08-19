@@ -409,3 +409,29 @@ body {
         border-radius: 20px;
     }
 }
+
+/* ================= RESPONSIVE PATCH ================= */
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+@media (max-width: 900px) {
+    .hero {
+        grid-template-columns: 1fr !important;
+        text-align: center;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .navbar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .category-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -2,12 +2,13 @@
 session_start();
 
 if (!isset($_SESSION['admin'])) {
-    echo "<script>alert('Access Denied.');</script>";
+    header("Location: access_denied.php");
     exit;
 }
 
 include "db.php";
 
+$fromOrders = isset($_GET['from']) && $_GET['from'] === 'orders';
 $token = $_GET['token'] ?? null;
 
 if (!$token) {
@@ -26,13 +27,18 @@ if(isset($_POST['mark_paid']) && $order_data['payment_status'] == 'waiting_verif
 
     $orderId = $order_data['id'];
 
+    // ✅ Mark order paid
+    mysqli_query($conn, "
+        UPDATE orders 
+        SET payment_status='paid' 
+        WHERE id='$orderId'
+    ");
 
-    mysqli_query($conn, "UPDATE orders SET payment_status='paid' 
-        WHERE id='$orderId'");
-
-
-    $items = mysqli_query($conn, "SELECT product_id FROM order_items 
-    WHERE order_id='$orderId'
+    // ✅ Get items
+    $items = mysqli_query($conn, "
+        SELECT product_id 
+        FROM order_items 
+        WHERE order_id='$orderId'
     ");
 
     $productIds = [];
@@ -40,26 +46,26 @@ if(isset($_POST['mark_paid']) && $order_data['payment_status'] == 'waiting_verif
     while($item = mysqli_fetch_assoc($items)){
         $productIds[] = $item['product_id'];
 
+        // ✅ FIXED: update product_items NOT products
         mysqli_query($conn, "
-            UPDATE products 
+            UPDATE product_items 
             SET status='out_of_stock' 
-            WHERE id='".$item['product_id']."'
+            WHERE product_id='".$item['product_id']."' 
+            AND status='in_cart'
         ");
     }
 
- 
+    // ✅ Remove from cart
     if(!empty($productIds)){
         $ids = implode(",", $productIds);
         mysqli_query($conn, "DELETE FROM cart WHERE product_id IN ($ids)");
     }
 
-
+    // ✅ Reset budget
     mysqli_query($conn, "UPDATE settings SET budget = 0 WHERE id = 1");
 
-    echo "<script>
-        alert('Order marked as PAID');
-        window.location.href='order_page.php';
-    </script>";
+    // ✅ CLEAN REDIRECT (NO ERROR)
+    header("Location: order_page.php?success=paid");
     exit;
 }
 
@@ -137,12 +143,51 @@ body {
     font-weight: 600;
     color: #333;
 }
+.btn-back-orders {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+
+    background: #8B5E34;
+    color: #fff;
+
+    padding: 8px 16px;
+    border-radius: 20px;
+
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+/* Hover effect */
+.btn-back-orders:hover {
+    background: #6d4728;
+    transform: translateY(-1px);
+}
+
+/* Click effect */
+.btn-back-orders:active {
+    transform: scale(0.98);
+}
 </style>
 </head>
 
 <body>
 
 <div class="receipt">
+    <?php if($fromOrders): ?>
+        <a href="order_page.php" class="btn-back-orders">
+            ← Back
+        </a>
+    <?php endif; ?>
+
     <h2>Order #<?php echo $order_data['id']; ?></h2>
     <p><strong>Total:</strong> ₱<?php echo $order_data['total_amount']; ?></p>
     <p><strong>Date:</strong> <?php echo $order_data['created_at']; ?></p>

@@ -16,7 +16,8 @@ if(isset($_POST['login'])){
         exit;
 
     } else {
-        echo "<script>alert('Invalid username or password.');</script>";
+        header("Location: admin_login.php?error=invalid");
+        exit;
     }
 }
 ?>
@@ -56,7 +57,7 @@ if(isset($_POST['login'])){
     <div class="login-right">
         <div class="login-box">
             <h2>ADMIN PANEL</h2>
-
+            <div id="toast" class="toast"></div>
             <?php if($error != ""): ?>
                 <p class="error"><?= $error ?></p>
             <?php endif; ?>
@@ -79,7 +80,7 @@ if(isset($_POST['login'])){
 
             </form>
 
-            <a href="home.html" class="back-home">
+            <a href="index.php" class="back-home">
                 ← Back to Home
             </a>
 
@@ -90,3 +91,20 @@ if(isset($_POST['login'])){
 
 </body>
 </html>
+
+<script>
+function showToast(message) {
+    const toast = document.getElementById("toast");
+    toast.innerText = message;
+    toast.classList.add("show");
+
+    setTimeout(() => {
+        toast.classList.remove("show");
+    }, 2000);
+}
+
+// CHECK URL
+<?php if(isset($_GET['error']) && $_GET['error'] == 'invalid'): ?>
+    showToast("Invalid username or password");
+<?php endif; ?>
+</script>

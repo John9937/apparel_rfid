@@ -1,66 +1,92 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
 include 'db.php';
 
-$name   = $_POST['name'];
-$action = $_POST['action'];
+$productId = $_POST['product_id'] ?? '';
+$action    = $_POST['action'] ?? '';
 
-if ($name === '' || $action === '') {
+if ($productId === '' || $action === '') {
+    echo "NO_INPUT";
     exit;
 }
 
+$productId = (int)$productId;
 
+/* ================= DECREASE ================= */
 if ($action === 'decrease') {
 
-    $sql = "SELECT cart.id AS cart_id, cart.product_id, products.tag_id FROM cart
-            JOIN products ON products.id = cart.product_id WHERE products.name = '$name'
-            LIMIT 1";
+    // get one cart row
+    $result = mysqli_query($conn, "
+        SELECT id FROM cart WHERE product_id = $productId LIMIT 1
+    ");
 
-    $result = mysqli_query($conn, $sql);
-
-    if ($row = mysqli_fetch_assoc($result)) {
-
-        $cartId = (int)$row['cart_id'];
-        $productId = (int)$row['product_id'];
-        $tagId = $row['tag_id'];
-
-      
-        mysqli_query($conn, "DELETE FROM cart WHERE id = $cartId");
-
-       
-        mysqli_query($conn, "UPDATE products SET status='in_stock' WHERE id=$productId");
-
-        echo $tagId;
+    if (mysqli_num_rows($result) == 0) {
+        echo "NOT_FOUND";
         exit;
     }
-}
 
+    $row = mysqli_fetch_assoc($result);
+    $cartId = $row['id'];
 
+    // 🔥 get ONE actual item
+    $item = mysqli_query($conn, "
+        SELECT id, rfid_uid FROM product_items 
+        WHERE product_id = $productId 
+        AND status='in_cart'
+        ORDER BY id ASC
+        LIMIT 1
+    ");
 
-if ($action === 'remove') {
+    if ($item && mysqli_num_rows($item) > 0) {
+        $itemRow = mysqli_fetch_assoc($item);
+        $rfid = $itemRow['rfid_uid'];
 
-    $tagIds = [];
-
-    $sql = "SELECT cart.id AS cart_id, cart.product_id, products.tag_id FROM cart
-            JOIN products ON products.id = cart.product_id WHERE products.name = '$name'";
-
-    $result = mysqli_query($conn, $sql);
-
-    while ($row = mysqli_fetch_assoc($result)) {
-
-        $cartId = (int)$row['cart_id'];
-        $productId = (int)$row['product_id'];
-        $tagIds[] = $row['tag_id'];
-
-     
-        mysqli_query($conn, "DELETE FROM cart WHERE id = $cartId");
-
-        
-        mysqli_query($conn, "UPDATE products SET status='in_stock' WHERE id=$productId");
+        mysqli_query($conn, "
+            UPDATE product_items 
+            SET status='in_stock' 
+            WHERE id = {$itemRow['id']}
+        ");
     }
 
-    echo implode(",", $tagIds);
+    // delete cart row
+    mysqli_query($conn, "DELETE FROM cart WHERE id = $cartId");
+
+   echo "REMOVED_ONE:$rfid";
+    exit;
+}
+/* ================= REMOVE ================= */
+if ($action === 'remove') {
+
+    // 🔥 get ALL cart items first
+    $items = mysqli_query($conn, "
+        SELECT id, rfid_uid FROM product_items 
+        WHERE product_id = $productId 
+        AND status='in_cart'
+        ORDER BY id ASC
+    ");
+
+    $rfids = [];
+
+    while ($row = mysqli_fetch_assoc($items)) {
+        $itemId = $row['id'];
+        $rfids[] = $row['rfid_uid'];
+
+        mysqli_query($conn, "
+            UPDATE product_items 
+            SET status='in_stock' 
+            WHERE id = $itemId
+        ");
+    }
+
+    // 🔥 delete cart rows
+    mysqli_query($conn, "
+        DELETE FROM cart WHERE product_id = $productId
+    ");
+
+    echo "REMOVED_ALL:" . implode(",", $rfids);
     exit;
 }
 
-
-echo "OK";
+echo "INVALID_ACTION";
