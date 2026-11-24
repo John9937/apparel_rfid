@@ -1,0 +1,19 @@
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Database backups
+*.sql
+*.sql.gz
+database_backup/
+
+# Private keys
+*.pem
+*.key
+id_rsa
+id_ed25519
+
+# Local configuration
+config.local.php
