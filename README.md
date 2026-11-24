@@ -86,20 +86,38 @@ This repository is intended for educational and portfolio purposes.
 
 ### RFID Product Identification
 
+![RFID Product Identification Screenshot](./images/rfid-product-identification.jpg)
+
 ### Budget Setting Interface
+
+![Budget Setting Interface Screenshot](./images/budget-setting-interface.jpg)
 
 ### Budget Limit Validation
 
+![Budget Limit Validation](./images/budget-limit-validation.jpg)
+
 ### Payment Confirmation QR Code
+
+![Payment Confirmation QR Code Screenshot](./images/payment-confirmation-code.jpg)
 
 ### Order Verification Page
 
+![Order Verification Page Screenshot](./images/order-verification-page.jpg)
+
 ### Admin Login Interface
+
+![Admin Login Interface Screenshot](./images/admin-login-interface.jpg)
 
 ### Admin Order Management
 
+![Admin Order Management Screenshot](./images/admin-order-management.jpg)
+
 ### Admin Access Denied
 
+![Admin Access Denied Screenshot](./images/admin-access-denied.jpg)
+
 ### MySQL Database Structure
+
+![MySQL Database Structure Screenshot](./images/mysql-database-structure.jpg)
 
 
