@@ -249,7 +249,7 @@ $percentUsed = $budget > 0 ? min(100, ($total / $budget) * 100) : 0;
 
         <form action="create_checkout.php" method="POST">
             <button class="checkout-btn">
-                Checkout (PayMongo)
+                Checkout
             </button>
         </form>
     </div>
