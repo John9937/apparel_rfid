@@ -79,3 +79,27 @@ This repository is intended for educational and portfolio purposes.
 ### Homepage
 
 ![Homepage Screenshot](./images/homepage-landing-page.jpg)
+
+### Product Shopping Interface
+
+![Product Shopping Interface Screenshot](./images/product-shopping-interface.jpg)
+
+### RFID Product Identification
+
+### Budget Setting Interface
+
+### Budget Limit Validation
+
+### Payment Confirmation QR Code
+
+### Order Verification Page
+
+### Admin Login Interface
+
+### Admin Order Management
+
+### Admin Access Denied
+
+### MySQL Database Structure
+
+
