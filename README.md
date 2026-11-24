@@ -1,10 +1,34 @@
 # Apparel Shopping Assistant System
 
-A web-based apparel shopping assistant developed as an academic thesis project using PHP, JavaScript, HTML, CSS, and MySQL. The system incorporates RFID-based product identification and inventory-related functionality.
+The Apparel Shopping Assistant System is a web-based shopping and budget management platform developed as an academic thesis project in Computer Engineering. It aims to enhance the apparel shopping experience by integrating product management, inventory tracking, budget monitoring, and RFID-based product identification into a unified system.
+
+Built using PHP, JavaScript, HTML, CSS, and MySQL, the system provides an interactive shopping environment where users can browse apparel products, manage their shopping carts, monitor their spending against a set budget, and proceed through the checkout process. RFID integration supports product identification, while QR code-based receipts provide a digital reference for completed transactions.
+
+The project demonstrates the integration of web application development, database management, and hardware-assisted identification to support a more organized and technology-driven apparel shopping experience.
 
 ## Project Overview
 
-The Apparel Shopping Assistant System is designed to support apparel shopping through product management, inventory tracking, and shopping cart functionality. It combines web technologies with RFID-based functionality to support product identification and shopping-related processes.
+The Apparel Shopping Assistant System is designed to provide a more convenient and structured approach to apparel shopping by combining essential e-commerce functionalities with budget management and RFID technology.
+
+Unlike a conventional online shopping interface, the system incorporates budget-related features that allow users to establish spending limits and monitor their purchases throughout the shopping process. This helps users make more informed purchasing decisions while keeping their selections within their intended budget.
+
+The system also integrates RFID-based product identification to support the identification of apparel items during shopping-related operations. Combined with inventory management and database-driven product records, this functionality helps connect physical product identification with the system's digital shopping environment.
+
+Core System Components
+
+Product and Inventory Management – Organizes apparel product information and maintains inventory-related records.
+
+Shopping and Cart Management – Allows users to browse available products, select items, and manage their shopping cart.
+
+Budget Management – Provides budget-setting and budget-limit validation functionality to help users monitor their planned spending.
+
+RFID-Based Product Identification – Integrates RFID scanning to support product identification within the shopping process.
+
+Checkout and Payment Processing – Supports the checkout workflow and transaction-related processes.
+
+QR Code-Based Receipts – Generates QR code-based receipts to provide a digital reference for transactions.
+
+Through these integrated components, the project demonstrates how web technologies, database systems, and RFID functionality can work together to create a more organized and budget-conscious apparel shopping experience.
 
 ## Technologies Used
 
