@@ -132,6 +132,10 @@ This repository is intended for educational and portfolio purposes.
 
 ![Admin Login Interface Screenshot](./images/admin-login-interface.jpg)
 
+### Admin Inventory Management Dashboard
+
+![Admin Inventory Management Dashboard](./images/admin-inventory-management-dashboard.jpg)
+
 ### Admin Order Management
 
 ![Admin Order Management Screenshot](./images/admin-order-management.jpg)
@@ -143,5 +147,11 @@ This repository is intended for educational and portfolio purposes.
 ### MySQL Database Structure
 
 ![MySQL Database Structure Screenshot](./images/mysql-database-structure.jpg)
+
+### RFID-Integrated Shopping Prototype
+
+![RFID-Integrated Shopping Prototype](./images/rfid-integrated-shopping-prototype.jpg)
+
+
 
 
