@@ -122,7 +122,7 @@ This repository is intended for educational and portfolio purposes.
 
 ### Payment Confirmation QR Code
 
-![Payment Confirmation QR Code Screenshot](./images/payment-confirmation-code.jpg)
+![Payment Confirmation QR Code Screenshot](./images/payment-confirmation-qr-code.jpg)
 
 ### Order Verification Page
 
